@@ -1,3 +1,5 @@
+# https://stackoverflow.com/questions/17594298/date-time-formats-in-python
+
 import os
 from django.core.wsgi import get_wsgi_application
 
@@ -11,19 +13,17 @@ import requests
 import json
 
 url = "https://skindevreplica.api.tatamotors/api/cv/fota_campaign/get_details/"
-
-payload = json.dumps({
-    "from_date": "01-10-2022 00:00:00",
-    "offset": 0
-})
 headers = {
     'Authorization': 'Bearer uW5opVREeJWnptG0ETfas8asd8h',
     'Content-Type': 'application/json'
 }
 
+payload = json.dumps({
+    "from_date": "01-10-2022 00:00:00",
+    "offset": 0
+})
 response = requests.request("POST", url, headers=headers, data=payload)
 
-print(response.json())
 d = {
     'data':
         [
