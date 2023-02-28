@@ -24,6 +24,8 @@ payload = json.dumps({
 })
 response = requests.request("POST", url, headers=headers, data=payload)
 
+print(CRM_Data_Staging.objects.all())
+
 d = {
     'data':
         [
@@ -38,11 +40,20 @@ d = {
                 'PPL_s': 'LCV 4T', 'VEHICLE_ORG_s': 'BAFNA Motors (Mumbai) Pvt. Ltd.', 'DEALERCODE_s': '1001680',
                 'CA_ADLINE1_s': 'ADDRESS LINE 1:REQUIRED 14 MAY TMCV', 'CA_STATE_s': 'MH',
                 'CHASSIS_NUM_s': 'MAT447269TED09318', 'CON_LSTNAME_s': 'LOHAR', 'ACC_STATE_s': 'OD',
-                'ACC_CITY_s': 'ALARIGADA', 'EMITION_NOM_s': 'BS VI', 'ROW_ID': '1-5MAXD-353', 'NAME_s': '26526331000R',
-                'DLR_CITY_s': 'MUMBAI', 'DLRSO_STATE_s': 'MH', 'CHA_STAT_s': 'Delivered to Customer',
+                'ACC_CITY_s': 'ALARIGADA',
+                'EMITION_NOM_s': 'BS VI',
+                'ROW_ID': '1-5MAXD-353',
+                'NAME_s': '26526331000R',
+                'DLR_CITY_s': 'MUMBAI',
+                'DLRSO_STATE_s': 'MH',
+                'CHA_STAT_s': 'Delivered to Customer',
                 'PL_s': 'SFC407 Truck',
                 'invoice_details':
-                    {'INVC_dt': '2022-08-05T00:00:00Z', 'INVC_NUM_s': 'IBAFTA2223000492'}},
+                    {
+                        'INVC_dt': '2022-08-05T00:00:00Z',
+                        'INVC_NUM_s': 'IBAFTA2223000492'
+                    }
+            },
             {'ACC_ADLINE1_s': 'GODAVARISH NAGAR 4TH LANE AUROBINDA NAGAR', 'CON_FSTNAME_s': 'SUJIT', 'LOB_s': 'LCV',
              'VEH_DELDT_dt': '2022-07-20T00:00:00Z', 'CON_CELL_PH_NUM_s': '9711506064', 'contentType': 'vehicle_info',
              'CA_CITY_s': 'MUMBAI', 'DLR_REGION_s': 'West', 'ENGINE_NUM_s': '497SPTC35 KWZ911005',
