@@ -2,11 +2,11 @@
 # datetime.datetime.strptime("2022-08-05T00:00:00Z","%Y-%m-%dT%H:%M:%SZ")
 
 import json
+import math
 import os
 from datetime import date
-import math
-import requests
 
+import requests
 from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "project.settings")
@@ -17,7 +17,29 @@ from get_crm.models import CRM_Data_Staging
 today_date = date.today().strftime("%d-%m-%Y")
 url = "https://skindevreplica.api.tatamotors/api/cv/fota_campaign/get_details/"
 headers = {'Authorization': 'Bearer uW5opVREeJWnptG0ETfas8asd8h', 'Content-Type': 'application/json'}
+from django.utils import timezone
 
+
+def normalize_format_name(arg1, arg2):
+    if arg1 and arg2:
+        return f'{arg1} {arg2}'
+    elif arg1:
+        return f'{arg1}'
+    elif arg2:
+        return f'{arg2}'
+    else:
+        return None
+
+
+def normalize_format_address(arg1, arg2):
+    if arg1 and arg2:
+        return f'{arg1}, {arg2}'
+    elif arg1:
+        return f'{arg1}'
+    elif arg2:
+        return f'{arg2}'
+    else:
+        return None
 
 def save_in_database(data):
     while data:
@@ -28,7 +50,7 @@ def save_in_database(data):
             engine_type=k.get("ENGINE_TYPE_s"),
             engine_number=k.get("ENGINE_NUM_s"),
             emission_norm=k.get("EMITION_NOM_s"),
-            customer_delivered_date=k.get(""),
+            customer_delivered_date=k.get("VEH_DELDT_dt"),
             lob=k.get("LOB_s"),
             pl=k.get("PL_s"),
             ppl=k.get("PPL_s"),
@@ -39,24 +61,26 @@ def save_in_database(data):
             dealer_region=k.get("DLR_REGION_s"),
             dealer_state=k.get("DLRSO_STATE_s"),
             dealer_city=k.get("DLR_CITY_s"),
-            customer_name=f"{k.get('CON_FSTNAME_s')} {k.get('CON_LSTNAME_s')}",
+            customer_name=normalize_format_name(k.get('CON_FSTNAME_s'), k.get('CON_LSTNAME_s')),
             vehicle_account=k.get("VEH_ACCOUNT_s"),
             customer_type=k.get("CON_CUST_SEGMENT_s"),
-            customer_ph_no=f"{k.get('CON_CELL_PH_NUM_s')},{k.get('ACC_MAINPH_NUM_s')}",
-            customer_state=f"{k.get('CA_STATE_s')},{k.get('CA_STATE_s')}",
-            customer_city=f"{k.get('CA_CITY_s')},{k.get('ACC_CITY_s')}",
-            customer_address=f"{k.get('CA_ADLINE1_s')},{k.get('ACC_ADLINE1_s')}",
-            driver_name=f"{k.get('DRIVER_FIRSTNAME_s')} {k.get('DRI_LNAME_s')}",
+            customer_ph_no=normalize_format_address(k.get('CON_CELL_PH_NUM_s'), k.get('ACC_MAINPH_NUM_s')),
+            customer_state=normalize_format_address(k.get('CA_STATE_s'), k.get('CA_STATE_s')),
+            customer_city=normalize_format_address(k.get('CA_CITY_s', ''), k.get('ACC_CITY_s', '')),
+            customer_address=normalize_format_address(k.get('CA_ADLINE1_s'), k.get('ACC_ADLINE1_s')),
+            driver_name=normalize_format_name(k.get('DRIVER_FIRSTNAME_s'), k.get('DRI_LNAME_s')),
             driver_contact=k.get("DRI_MOBNUM_s"),
             invoice_date=k.get("INVC_dt"),
             invoice_number=k.get("INVC_NUM_s"),
             invoice_cancle_date=k.get("CANCEL_dt"),
-            data_received_date=today_date,
+            data_received_date=timezone.now(),
         )
     return 'all data saved successfully'
 
 
-payload = json.dumps({"from_date": f"{today_date} 00:00:00", "offset": 0})
+
+# payload = json.dumps({"from_date": f"{today_date} 00:00:00", "offset": 0})
+payload = json.dumps({"from_date": "01-01-2023 00:00:00", "offset": 0})
 response = requests.request("POST", url, headers=headers, data=payload)
 data = json.loads(response.text).get("data")
 print(save_in_database(data))
@@ -64,11 +88,11 @@ print(save_in_database(data))
 total_count = json.loads(response.text).get("total_count")
 total_count_round_number = (math.ceil(total_count / 20) * 20) + 20
 
-# for num in range(20, total_count_round_number, 20):
-#     payload = json.dumps({"from_date": f"{today_date} 00:00:00", "offset": num})
-#     response = requests.request("POST", url, headers=headers, data=payload)
-#     list_data = json.loads(response.text).get("data")
-#     if not list_data:
-#         break
-#     save_in_database(list_data)
+for num in range(20, total_count_round_number, 20):
+    print(num)
+    # payload = json.dumps({"from_date": f"{today_date} 00:00:00", "offset": num})
+    payload = json.dumps({"from_date": "01-01-2023 00:00:00", "offset": num})
+    response = requests.request("POST", url, headers=headers, data=payload)
+    list_data = json.loads(response.text).get("data")
+    print(save_in_database(list_data))
 
