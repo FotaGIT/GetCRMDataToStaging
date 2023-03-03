@@ -1,207 +1,74 @@
 # https://stackoverflow.com/questions/17594298/date-time-formats-in-python
+# datetime.datetime.strptime("2022-08-05T00:00:00Z","%Y-%m-%dT%H:%M:%SZ")
 
+import json
 import os
+from datetime import date
+import math
+import requests
+
 from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "project.settings")
 
 application = get_wsgi_application()
-# datetime.datetime.strptime("2022-08-05T00:00:00Z","%Y-%m-%dT%H:%M:%SZ")
-from core.models import CRM_Data_Staging
+from get_crm.models import CRM_Data_Staging
 
-import requests
-import json
-
+today_date = date.today().strftime("%d-%m-%Y")
 url = "https://skindevreplica.api.tatamotors/api/cv/fota_campaign/get_details/"
-headers = {
-    'Authorization': 'Bearer uW5opVREeJWnptG0ETfas8asd8h',
-    'Content-Type': 'application/json'
-}
+headers = {'Authorization': 'Bearer uW5opVREeJWnptG0ETfas8asd8h', 'Content-Type': 'application/json'}
 
-payload = json.dumps({
-    "from_date": "01-10-2022 00:00:00",
-    "offset": 0
-})
+
+def save_in_database(data):
+    while data:
+        k = data.pop()
+        CRM_Data_Staging.objects.create(
+            chassis_number=k.get("CHASSIS_NUM_s"),
+            vc_number=k.get("NAME_s"),
+            engine_type=k.get("ENGINE_TYPE_s"),
+            engine_number=k.get("ENGINE_NUM_s"),
+            emission_norm=k.get("EMITION_NOM_s"),
+            customer_delivered_date=k.get(""),
+            lob=k.get("LOB_s"),
+            pl=k.get("PL_s"),
+            ppl=k.get("PPL_s"),
+            physical_status=k.get("CHA_STAT_s"),
+            logical_status=k.get("VEH_STATUS_s"),
+            dealer_name=k.get("VEHICLE_ORG_s"),
+            dealer_code=k.get("DEALERCODE_s"),
+            dealer_region=k.get("DLR_REGION_s"),
+            dealer_state=k.get("DLRSO_STATE_s"),
+            dealer_city=k.get("DLR_CITY_s"),
+            customer_name=f"{k.get('CON_FSTNAME_s')} {k.get('CON_LSTNAME_s')}",
+            vehicle_account=k.get("VEH_ACCOUNT_s"),
+            customer_type=k.get("CON_CUST_SEGMENT_s"),
+            customer_ph_no=f"{k.get('CON_CELL_PH_NUM_s')},{k.get('ACC_MAINPH_NUM_s')}",
+            customer_state=f"{k.get('CA_STATE_s')},{k.get('CA_STATE_s')}",
+            customer_city=f"{k.get('CA_CITY_s')},{k.get('ACC_CITY_s')}",
+            customer_address=f"{k.get('CA_ADLINE1_s')},{k.get('ACC_ADLINE1_s')}",
+            driver_name=f"{k.get('DRIVER_FIRSTNAME_s')} {k.get('DRI_LNAME_s')}",
+            driver_contact=k.get("DRI_MOBNUM_s"),
+            invoice_date=k.get("INVC_dt"),
+            invoice_number=k.get("INVC_NUM_s"),
+            invoice_cancle_date=k.get("CANCEL_dt"),
+            data_received_date=today_date,
+        )
+    return 'all data saved successfully'
+
+
+payload = json.dumps({"from_date": f"{today_date} 00:00:00", "offset": 0})
 response = requests.request("POST", url, headers=headers, data=payload)
+data = json.loads(response.text).get("data")
+print(save_in_database(data))
 
-print(CRM_Data_Staging.objects.all())
+total_count = json.loads(response.text).get("total_count")
+total_count_round_number = (math.ceil(total_count / 20) * 20) + 20
 
-d = {
-    'data':
-        [
-            {
-                'ACC_ADLINE1_s': 'GODAVARISH NAGAR 4TH LANE AUROBINDA NAGAR',
-                'CON_FSTNAME_s': 'AJINKYA',
-                'LOB_s': 'LCV',
-                'VEH_DELDT_dt': '2022-08-05T00:00:00Z', 'CON_CELL_PH_NUM_s': '9309244859',
-                'contentType': 'vehicle_info',
-                'CA_CITY_s': 'ABHALWADI', 'DLR_REGION_s': 'West', 'ENGINE_NUM_s': '497SPTC35 KWZ912648',
-                'VEH_STATUS_s': 'Allocated', 'ACC_MAINPH_NUM_s': '9309244859', 'VEH_ACCOUNT_s': 'TESTGSTIRN',
-                'PPL_s': 'LCV 4T', 'VEHICLE_ORG_s': 'BAFNA Motors (Mumbai) Pvt. Ltd.', 'DEALERCODE_s': '1001680',
-                'CA_ADLINE1_s': 'ADDRESS LINE 1:REQUIRED 14 MAY TMCV', 'CA_STATE_s': 'MH',
-                'CHASSIS_NUM_s': 'MAT447269TED09318', 'CON_LSTNAME_s': 'LOHAR', 'ACC_STATE_s': 'OD',
-                'ACC_CITY_s': 'ALARIGADA',
-                'EMITION_NOM_s': 'BS VI',
-                'ROW_ID': '1-5MAXD-353',
-                'NAME_s': '26526331000R',
-                'DLR_CITY_s': 'MUMBAI',
-                'DLRSO_STATE_s': 'MH',
-                'CHA_STAT_s': 'Delivered to Customer',
-                'PL_s': 'SFC407 Truck',
-                'invoice_details':
-                    {
-                        'INVC_dt': '2022-08-05T00:00:00Z',
-                        'INVC_NUM_s': 'IBAFTA2223000492'
-                    }
-            },
-            {'ACC_ADLINE1_s': 'GODAVARISH NAGAR 4TH LANE AUROBINDA NAGAR', 'CON_FSTNAME_s': 'SUJIT', 'LOB_s': 'LCV',
-             'VEH_DELDT_dt': '2022-07-20T00:00:00Z', 'CON_CELL_PH_NUM_s': '9711506064', 'contentType': 'vehicle_info',
-             'CA_CITY_s': 'MUMBAI', 'DLR_REGION_s': 'West', 'ENGINE_NUM_s': '497SPTC35 KWZ911005',
-             'VEH_STATUS_s': 'Allocated', 'ACC_MAINPH_NUM_s': '9309244859', 'VEH_ACCOUNT_s': 'TESTGSTIRN',
-             'PPL_s': 'LCV 4T', 'VEHICLE_ORG_s': 'BAFNA Motors (Mumbai) Pvt. Ltd.', 'DEALERCODE_s': '1001680',
-             'CA_ADLINE1_s': 'NEAR GRAMPANCHYAT', 'CA_STATE_s': 'MH', 'CHASSIS_NUM_s': 'MAT447269TED09352',
-             'CON_LSTNAME_s': 'PAWAR', 'ACC_STATE_s': 'OD', 'ACC_CITY_s': 'ALARIGADA', 'EMITION_NOM_s': 'BS VI',
-             'ROW_ID': '1-5MAXD-160', 'NAME_s': '26526331000R', 'DLR_CITY_s': 'MUMBAI', 'DLRSO_STATE_s': 'MH',
-             'CHA_STAT_s': 'Delivered to Customer', 'PL_s': 'SFC407 Truck',
-             'invoice_details': {'INVC_dt': '2022-07-20T00:00:00Z', 'INVC_NUM_s': 'IBAFTA2223000445'}},
-            {'CON_FSTNAME_s': 'PRATEEK', 'LOB_s': 'M&HCV Const', 'CON_CELL_PH_NUM_s': '8630266615',
-             'contentType': 'vehicle_info', 'CA_CITY_s': 'AMBALE', 'VEH_STATUS_s': 'Available',
-             'PPL_s': 'MCV Tippers', 'VEHICLE_ORG_s': 'V S T MOTORS LTD.', 'DEALERCODE_s': '1001000',
-             'CA_ADLINE1_s': '                                                             TEST DEMO PUNE',
-             'CA_STATE_s': 'MH', 'CHASSIS_NUM_s': 'MAT21820936000R08', 'CON_LSTNAME_s': 'FLEET',
-             'EMITION_NOM_s': 'BS III', 'ROW_ID': '1-5UZ2L-27', 'NAME_s': '21820936000R', 'DLR_CITY_s': ' CHENNAI',
-             'CHA_STAT_s': 'Delivered to Customer', 'PL_s': 'LPK1618TC', 'invoice_details': {}},
-            {'ACC_ADLINE1_s': 'GODAVARISH NAGAR 4TH LANE AUROBINDA NAGAR', 'CON_FSTNAME_s': 'AJINKYA', 'LOB_s': 'LCV',
-             'VEH_DELDT_dt': '2022-10-04T00:00:00Z', 'CON_CELL_PH_NUM_s': '9867568809', 'contentType': 'vehicle_info',
-             'CA_CITY_s': 'MUMBAI', 'DLR_REGION_s': 'West', 'VEH_STATUS_s': 'Allocated',
-             'ACC_MAINPH_NUM_s': '9309244859', 'VEH_ACCOUNT_s': 'TESTGSTIRN', 'PPL_s': 'LCV 4T',
-             'VEHICLE_ORG_s': 'BAFNA Motors (Mumbai) Pvt. Ltd.', 'DEALERCODE_s': '1001680',
-             'CA_ADLINE1_s': 'SUMINT GAFSYT', 'CA_STATE_s': 'MH', 'CHASSIS_NUM_s': 'MAT447269TED09079',
-             'CON_LSTNAME_s': 'LOHAR', 'ACC_STATE_s': 'OD', 'ACC_CITY_s': 'ALARIGADA', 'EMITION_NOM_s': 'BS VI',
-             'ROW_ID': '1-5MAXD-208', 'NAME_s': '26526331000R', 'DLR_CITY_s': 'MUMBAI', 'DLRSO_STATE_s': 'MH',
-             'CHA_STAT_s': 'Delivered to Customer', 'PL_s': 'SFC407 Truck',
-             'invoice_details': {'INVC_dt': '2022-10-04T00:00:00Z', 'INVC_NUM_s': 'IBAFTA2223000590'}},
-            {'ACC_ADLINE1_s': 'GODAVARISH NAGAR 4TH LANE AUROBINDA NAGAR', 'CON_FSTNAME_s': 'AJINKYA', 'LOB_s': 'LCV',
-             'VEH_DELDT_dt': '2022-10-04T00:00:00Z', 'CON_CELL_PH_NUM_s': '9309244859', 'contentType': 'vehicle_info',
-             'CA_CITY_s': 'ABHALWADI', 'DLR_REGION_s': 'West', 'VEH_STATUS_s': 'Allocated',
-             'ACC_MAINPH_NUM_s': '9309244859', 'VEH_ACCOUNT_s': 'TESTGSTIRN', 'PPL_s': 'LCV 4T',
-             'VEHICLE_ORG_s': 'BAFNA Motors (Mumbai) Pvt. Ltd.', 'DEALERCODE_s': '1001680',
-             'CA_ADLINE1_s': 'ADDRESS LINE 1:REQUIRED 14 MAY TMCV', 'CA_STATE_s': 'MH',
-             'CHASSIS_NUM_s': 'MAT447269TED09047', 'CON_LSTNAME_s': 'LOHAR', 'ACC_STATE_s': 'OD',
-             'ACC_CITY_s': 'ALARIGADA', 'EMITION_NOM_s': 'BS VI', 'ROW_ID': '1-5MAXD-10', 'NAME_s': '26526331000R',
-             'DLR_CITY_s': 'MUMBAI', 'DLRSO_STATE_s': 'MH', 'CHA_STAT_s': 'Delivered to Customer',
-             'PL_s': 'SFC407 Truck',
-             'invoice_details': {'INVC_dt': '2022-10-03T00:00:00Z', 'INVC_NUM_s': 'IBAFTA2223000589'}},
-            {'ACC_ADLINE1_s': 'ADDRESS LINE 1:REQUIRED 14 MAY TMCV', 'LOB_s': 'LCV', 'contentType': 'vehicle_info',
-             'VEH_STATUS_s': 'Sold - Direct Billing', 'VEH_ACCOUNT_s': 'CARGO MOTORS PVT LTD-1001350',
-             'PPL_s': 'LCV 4T', 'VEHICLE_ORG_s': 'CARGO MOTORS PVT LTD-1001350', 'DEALERCODE_s': '1001350',
-             'CHASSIS_NUM_s': 'MAT26574831000R14', 'ACC_STATE_s': 'MH', 'ACC_CITY_s': 'ABHALWADI',
-             'EMITION_NOM_s': 'BS IV', 'ROW_ID': '1-DSE5SC3', 'NAME_s': '26574831000R', 'CHA_STAT_s': 'DB In Transit',
-             'PL_s': 'SFC407 Truck', 'invoice_details': {}},
-            {'ACC_ADLINE1_s': 'ADDRESS LINE 1:REQUIRED 14 MAY TMCV', 'LOB_s': 'Buses', 'contentType': 'vehicle_info',
-             'VEH_STATUS_s': 'Sold - Direct Billing', 'VEH_ACCOUNT_s': 'CARGO MOTORS PVT LTD-1001350',
-             'PPL_s': 'LCV Buses', 'VEHICLE_ORG_s': 'CARGO MOTORS PVT LTD-1001350', 'DEALERCODE_s': '1001350',
-             'CHASSIS_NUM_s': 'MAT55273534100RB1', 'ACC_STATE_s': 'MH', 'ACC_CITY_s': 'ABHALWADI',
-             'EMITION_NOM_s': 'BS VI', 'ROW_ID': '1-DSECAVZ', 'NAME_s': '55273534100R', 'CHA_STAT_s': 'DB In Transit',
-             'PL_s': 'LP407 CNG', 'invoice_details': {}},
-            {'ACC_ADLINE1_s': 'ADDRESS LINE 1:REQUIRED 14 MAY TMCV', 'LOB_s': 'Pickups',
-             'contentType': 'vehicle_info', 'VEH_STATUS_s': 'Sold - Direct Billing',
-             'VEH_ACCOUNT_s': 'CARGO MOTORS PVT LTD-1001350', 'PPL_s': 'Pickup Large',
-             'VEHICLE_ORG_s': 'CARGO MOTORS PVT LTD-1001350', 'DEALERCODE_s': '1001350',
-             'CHASSIS_NUM_s': 'MAT28981731ABFRL2', 'ACC_STATE_s': 'MH', 'ACC_CITY_s': 'ABHALWADI',
-             'EMITION_NOM_s': 'BS VI', 'ROW_ID': '1-DSECAXD', 'NAME_s': '28981731ABFR', 'CHA_STAT_s': 'DB In Transit',
-             'PL_s': '207 EX', 'invoice_details': {}},
-            {'ACC_ADLINE1_s': 'ADDRESS LINE 1:REQUIRED 14 MAY TMCV', 'LOB_s': 'LCV', 'contentType': 'vehicle_info',
-             'VEH_STATUS_s': 'Sold - Direct Billing', 'VEH_ACCOUNT_s': 'CARGO MOTORS PVT LTD-1001350',
-             'PPL_s': 'LCV 4T', 'VEHICLE_ORG_s': 'CARGO MOTORS PVT LTD-1001350', 'DEALERCODE_s': '1001350',
-             'CHASSIS_NUM_s': 'MAT26574831000R28', 'ACC_STATE_s': 'MH', 'ACC_CITY_s': 'ABHALWADI',
-             'EMITION_NOM_s': 'BS IV', 'ROW_ID': '1-DSECAXX', 'NAME_s': '26574831000R', 'CHA_STAT_s': 'DB In Transit',
-             'PL_s': 'SFC407 Truck', 'invoice_details': {}},
-            {'ACC_ADLINE1_s': 'SHO', 'LOB_s': 'MCV Trucks', 'contentType': 'vehicle_info',
-             'VEH_STATUS_s': 'Sold - Direct Billing', 'ACC_MAINPH_NUM_s': '262713',
-             'VEH_ACCOUNT_s': 'JAIKA AUTOMOBILES & FINANCE LIMITED', 'PPL_s': 'MCV SE',
-             'VEHICLE_ORG_s': 'JAIKA AUTOMOBILES & FINANCE LIMITED', 'DEALERCODE_s': '1009700',
-             'CHASSIS_NUM_s': 'MAT21879342000R24', 'ACC_STATE_s': 'MH', 'ACC_CITY_s': 'ABIT KHIND',
-             'EMITION_NOM_s': 'BS IV', 'ROW_ID': '1-DSECAY7', 'NAME_s': '21879342000R', 'CHA_STAT_s': 'DB In Transit',
-             'PL_s': 'SE1613', 'invoice_details': {}},
-            {'CON_FSTNAME_s': 'TIWARI', 'LOB_s': 'M&HCV Const', 'CON_CELL_PH_NUM_s': '9969821775',
-             'contentType': 'vehicle_info', 'CA_CITY_s': 'PUR', 'ENGINE_NUM_s': '6BTAA-180HP90C62740392',
-             'VEH_STATUS_s': 'Available', 'PPL_s': 'MAV Tippers', 'VEHICLE_ORG_s': 'TMCV',
-             'DEALERCODE_s': '16584D9yu583', 'CA_ADLINE1_s': '                                     TEST DEMO PUNE',
-             'CA_STATE_s': 'MH', 'CHASSIS_NUM_s': 'MAT44809193D02135', 'CON_LSTNAME_s': 'ANNU',
-             'EMITION_NOM_s': 'BS II (EURO II)', 'ROW_ID': '1-3IE77-220', 'NAME_s': '21670138000R',
-             'DLR_CITY_s': 'Thetewadi', 'CHA_STAT_s': 'Delivered to Customer', 'PL_s': 'LPK2518TC',
-             'invoice_details': {}}, {'ACC_ADLINE1_s': 'SHO', 'LOB_s': 'MCV Trucks', 'contentType': 'vehicle_info',
-                                      'VEH_STATUS_s': 'Sold - Direct Billing', 'ACC_MAINPH_NUM_s': '262713',
-                                      'VEH_ACCOUNT_s': 'JAIKA AUTOMOBILES & FINANCE LIMITED', 'PPL_s': 'MCV SE',
-                                      'VEHICLE_ORG_s': 'JAIKA AUTOMOBILES & FINANCE LIMITED',
-                                      'DEALERCODE_s': '1009700', 'CHASSIS_NUM_s': 'MAT21879342000R78',
-                                      'ACC_STATE_s': 'MH', 'ACC_CITY_s': 'ABIT KHIND', 'EMITION_NOM_s': 'BS IV',
-                                      'ROW_ID': '1-DSGIBJ3', 'NAME_s': '21879342000R', 'CHA_STAT_s': 'DB In Transit',
-                                      'PL_s': 'SE1613', 'invoice_details': {}},
-            {'ACC_ADLINE1_s': 'SHO', 'LOB_s': 'MCV Trucks', 'contentType': 'vehicle_info',
-             'VEH_STATUS_s': 'Sold - Direct Billing', 'ACC_MAINPH_NUM_s': '262713',
-             'VEH_ACCOUNT_s': 'JAIKA AUTOMOBILES & FINANCE LIMITED', 'PPL_s': 'MCV SE',
-             'VEHICLE_ORG_s': 'JAIKA AUTOMOBILES & FINANCE LIMITED', 'DEALERCODE_s': '1009700',
-             'CHASSIS_NUM_s': 'MAT21879342000R80', 'ACC_STATE_s': 'MH', 'ACC_CITY_s': 'ABIT KHIND',
-             'EMITION_NOM_s': 'BS IV', 'ROW_ID': '1-DSGIBJD', 'NAME_s': '21879342000R', 'CHA_STAT_s': 'DB In Transit',
-             'PL_s': 'SE1613', 'invoice_details': {}},
-            {'ACC_ADLINE1_s': 'SHO', 'LOB_s': 'LCV', 'contentType': 'vehicle_info',
-             'VEH_STATUS_s': 'Sold - Direct Billing', 'ACC_MAINPH_NUM_s': '262713',
-             'VEH_ACCOUNT_s': 'JAIKA AUTOMOBILES & FINANCE LIMITED', 'PPL_s': 'LCV 4T',
-             'VEHICLE_ORG_s': 'JAIKA AUTOMOBILES & FINANCE LIMITED', 'DEALERCODE_s': '1009700',
-             'CHASSIS_NUM_s': 'MAT26574831000R22', 'ACC_STATE_s': 'MH', 'ACC_CITY_s': 'ABIT KHIND',
-             'EMITION_NOM_s': 'BS IV', 'ROW_ID': '1-DSGIBJN', 'NAME_s': '26574831000R', 'CHA_STAT_s': 'DB In Transit',
-             'PL_s': 'SFC407 Truck', 'invoice_details': {}},
-            {'ACC_ADLINE1_s': 'GODAVARISH NAGAR 4TH LANE AUROBINDA NAGAR', 'CON_FSTNAME_s': 'GANESH', 'LOB_s': 'LCV',
-             'CON_CELL_PH_NUM_s': '9867125441', 'contentType': 'vehicle_info', 'CA_CITY_s': 'AATKOLI',
-             'DLR_REGION_s': 'North', 'VEH_STATUS_s': 'Allocated', 'ACC_MAINPH_NUM_s': '9309244859',
-             'VEH_ACCOUNT_s': 'TESTGSTIRN', 'PPL_s': 'LCV 4T', 'VEHICLE_ORG_s': 'M/S. DADA MOTORS LTD.',
-             'DEALERCODE_s': '1003550', 'CA_ADLINE1_s': 'ADDRESS LINE 1:REQUIRED 14 MAY TMCV', 'CA_STATE_s': 'MH',
-             'CHASSIS_NUM_s': 'MAT447269TED09264', 'CON_LSTNAME_s': 'JADHAV', 'ACC_STATE_s': 'OD',
-             'ACC_CITY_s': 'ALARIGADA', 'EMITION_NOM_s': 'BS VI', 'ROW_ID': '1-5MAXD-136', 'NAME_s': '26526331000R',
-             'DLR_CITY_s': 'DELHI', 'DLRSO_STATE_s': 'PB', 'CHA_STAT_s': 'Delivered to Customer',
-             'PL_s': 'SFC407 Truck',
-             'invoice_details': {'INVC_dt': '2022-08-10T00:00:00Z', 'INVC_NUM_s': 'IDADLH2223000007'}},
-            {'ACC_ADLINE1_s': 'BAFNA MOTORS  MUMBAI  PVT LTD', 'LOB_s': 'LCV', 'VEH_DELDT_dt': '2021-11-25T00:00:00Z',
-             'contentType': 'vehicle_info', 'DLR_REGION_s': 'West', 'VEH_STATUS_s': 'Allocated',
-             'VEH_ACCOUNT_s': 'BAFNA MOTORS (MUMBAI) PVT LTD', 'PPL_s': 'LCV 4T',
-             'VEHICLE_ORG_s': 'BAFNA Motors (Mumbai) Pvt. Ltd.', 'DEALERCODE_s': '1001680',
-             'CHASSIS_NUM_s': 'MAT447269TED09011', 'ACC_STATE_s': 'MH', 'ACC_CITY_s': 'THANE',
-             'EMITION_NOM_s': 'BS VI', 'ROW_ID': '1-5MAXD-50', 'NAME_s': '26526331000R', 'DLR_CITY_s': 'MUMBAI',
-             'DLRSO_STATE_s': 'MH', 'CHA_STAT_s': 'Delivered to Customer', 'PL_s': 'SFC407 Truck',
-             'invoice_details': {'INVC_dt': '2021-08-09T00:00:00Z', 'INVC_NUM_s': 'IBAFTA2122000347',
-                                 'CANCEL_dt': '2021-08-09T08:09:37Z'}},
-            {'ACC_ADLINE1_s': 'ADDRESS LINE 1:REQUIRED 14 MAY TMCV', 'LOB_s': 'SCV Cargo_New',
-             'contentType': 'vehicle_info', 'VEH_STATUS_s': 'Sold - Direct Billing',
-             'VEH_ACCOUNT_s': 'CARGO MOTORS PVT LTD-1001350', 'PPL_s': 'Ace_Zip',
-             'VEHICLE_ORG_s': 'CARGO MOTORS PVT LTD-1001350', 'DEALERCODE_s': '1001350',
-             'CHASSIS_NUM_s': 'MAT55176016AIHRQR', 'ACC_STATE_s': 'MH', 'ACC_CITY_s': 'ABHALWADI',
-             'EMITION_NOM_s': 'BS VI', 'ROW_ID': '1-DSJ2FVZ', 'NAME_s': '55176016AIHR', 'CHA_STAT_s': 'DB In Transit',
-             'PL_s': 'Ace Zip XL', 'invoice_details': {}},
-            {'ACC_ADLINE1_s': 'SUPRENTENDENT OF POLICE', 'CON_FSTNAME_s': 'THE COMMANDANT', 'LOB_s': 'LCV',
-             'CON_CELL_PH_NUM_s': '9470199369', 'contentType': 'vehicle_info', 'CA_CITY_s': 'GHATSILA',
-             'ENGINE_NUM_s': '497SPTC35FSZ866114', 'VEH_STATUS_s': 'Sold - Direct Billing',
-             'ACC_MAINPH_NUM_s': '9431321378', 'VEH_ACCOUNT_s': 'S.P.', 'PPL_s': 'LCV 4T',
-             'VEHICLE_ORG_s': 'J. M. A. STORES LTD.', 'DEALERCODE_s': '1006800', 'CA_ADLINE1_s': 'MOSABANI CAMP',
-             'CA_STATE_s': 'JH', 'CHASSIS_NUM_s': '357171FSZ819646', 'CON_LSTNAME_s': 'SAP 2 BN', 'ACC_STATE_s': 'JH',
-             'ACC_CITY_s': 'GIRIDIH', 'EMITION_NOM_s': 'BS IV', 'ROW_ID': '1-2RFBK-508', 'NAME_s': '26515131100R',
-             'CHA_STAT_s': 'Delivered', 'PL_s': 'SFC407 Truck', 'invoice_details': {}},
-            {'ACC_ADLINE1_s': 'SUPRENTENDENT OF POLICE', 'CON_FSTNAME_s': 'THE COMMANDANT', 'LOB_s': 'LCV',
-             'CON_CELL_PH_NUM_s': '9470199369', 'contentType': 'vehicle_info', 'CA_CITY_s': 'GHATSILA',
-             'ENGINE_NUM_s': '497SPTC35FSZ866140', 'VEH_STATUS_s': 'Sold - Direct Billing',
-             'ACC_MAINPH_NUM_s': '9431321378', 'VEH_ACCOUNT_s': 'S.P.', 'PPL_s': 'LCV 4T',
-             'VEHICLE_ORG_s': 'J. M. A. STORES LTD.', 'DEALERCODE_s': '1006800', 'CA_ADLINE1_s': 'MOSABANI CAMP',
-             'CA_STATE_s': 'JH', 'CHASSIS_NUM_s': '357171FSZ819647', 'CON_LSTNAME_s': 'SAP 2 BN', 'ACC_STATE_s': 'JH',
-             'ACC_CITY_s': 'GIRIDIH', 'EMITION_NOM_s': 'BS IV', 'ROW_ID': '1-2RFBK-509', 'NAME_s': '26515131100R',
-             'CHA_STAT_s': 'Delivered', 'PL_s': 'SFC407 Truck', 'invoice_details': {}},
-            {'ACC_ADLINE1_s': 'SUPRENTENDENT OF POLICE', 'CON_FSTNAME_s': 'THE COMMANDANT', 'LOB_s': 'LCV',
-             'CON_CELL_PH_NUM_s': '9470199369', 'contentType': 'vehicle_info', 'CA_CITY_s': 'GHATSILA',
-             'ENGINE_NUM_s': '497SPTC35FSZ866810', 'VEH_STATUS_s': 'Sold - Direct Billing',
-             'ACC_MAINPH_NUM_s': '9431321378', 'VEH_ACCOUNT_s': 'S.P.', 'PPL_s': 'LCV 4T',
-             'VEHICLE_ORG_s': 'J. M. A. STORES LTD.', 'DEALERCODE_s': '1006800', 'CA_ADLINE1_s': 'MOSABANI CAMP',
-             'CA_STATE_s': 'JH', 'CHASSIS_NUM_s': '357171FSZ819877', 'CON_LSTNAME_s': 'SAP 2 BN', 'ACC_STATE_s': 'JH',
-             'ACC_CITY_s': 'GIRIDIH', 'EMITION_NOM_s': 'BS IV', 'ROW_ID': '1-2RFBK-439', 'NAME_s': '26515131100R',
-             'CHA_STAT_s': 'Delivered', 'PL_s': 'SFC407 Truck', 'invoice_details': {}}],
-    'total_count': 1121
-}
+# for num in range(20, total_count_round_number, 20):
+#     payload = json.dumps({"from_date": f"{today_date} 00:00:00", "offset": num})
+#     response = requests.request("POST", url, headers=headers, data=payload)
+#     list_data = json.loads(response.text).get("data")
+#     if not list_data:
+#         break
+#     save_in_database(list_data)
+
