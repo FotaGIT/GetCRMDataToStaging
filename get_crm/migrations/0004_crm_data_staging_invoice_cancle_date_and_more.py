@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0003_alter_max_date_table_table'),
+        ('get_crm', '0003_alter_max_date_table_table'),
     ]
 
     operations = [

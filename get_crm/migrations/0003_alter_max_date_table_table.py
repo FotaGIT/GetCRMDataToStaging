@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0002_rename_customer_name_crm_data_staging_customer_name_and_more'),
+        ('get_crm', '0002_rename_customer_name_crm_data_staging_customer_name_and_more'),
     ]
 
     operations = [
