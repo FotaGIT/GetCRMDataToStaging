@@ -1,6 +1,3 @@
-# https://stackoverflow.com/questions/17594298/date-time-formats-in-python
-# datetime.datetime.strptime("2022-08-05T00:00:00Z","%Y-%m-%dT%H:%M:%SZ")
-
 import json
 import math
 import os
@@ -41,6 +38,7 @@ def normalize_format_address(arg1, arg2):
     else:
         return None
 
+
 def save_in_database(data):
     while data:
         k = data.pop()
@@ -78,9 +76,8 @@ def save_in_database(data):
     return 'all data saved successfully'
 
 
-
-# payload = json.dumps({"from_date": f"{today_date} 00:00:00", "offset": 0})
-payload = json.dumps({"from_date": "01-01-2023 00:00:00", "offset": 0})
+# payload = json.dumps({"from_date": "01-01-2023 00:00:00", "offset": 0})
+payload = json.dumps({"from_date": f"{today_date} 00:00:00", "offset": 0})
 response = requests.request("POST", url, headers=headers, data=payload)
 data = json.loads(response.text).get("data")
 print(save_in_database(data))
@@ -89,10 +86,7 @@ total_count = json.loads(response.text).get("total_count")
 total_count_round_number = (math.ceil(total_count / 20) * 20) + 20
 
 for num in range(20, total_count_round_number, 20):
-    print(num)
-    # payload = json.dumps({"from_date": f"{today_date} 00:00:00", "offset": num})
-    payload = json.dumps({"from_date": "01-01-2023 00:00:00", "offset": num})
+    payload = json.dumps({"from_date": f"{today_date} 00:00:00", "offset": num})
     response = requests.request("POST", url, headers=headers, data=payload)
     list_data = json.loads(response.text).get("data")
     print(save_in_database(list_data))
-
