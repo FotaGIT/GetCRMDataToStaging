@@ -23,13 +23,10 @@ for i in obj_staging:
     objects_filter = EolCertClientTelematics.objects.filter(vin=i.get("chassis_number"))
     if objects_filter.exists():
         i['staging_id'] = ID
-        print(i.get("chassis_number"), 'update')
         objects_filter.update(**i)
     else:
-        print('create dump')
         CRM_Data_Dump.objects.create(**i)
 
 staging_objects_filter.delete()
-
 datetime_last_schedule.datetime = timezone.now()  # change field
 datetime_last_schedule.save()  # this will update only
