@@ -239,6 +239,7 @@ class EolCertClientTelematics(models.Model):
     model_name = models.CharField(db_column='MODEL_NAME', max_length=255, blank=True, null=True)  # Field name made lowercase.
     is_dataemailed_to_crm = models.CharField(db_column='IS_DataEmailed_TO_CRM', max_length=1, blank=True, null=True)  # Field name made lowercase.
     crmdataemailed_timestamp = models.DateTimeField(db_column='CRMDataEmailed_TIMESTAMP', blank=True, null=True)  # Field name made lowercase.
+
     staging_id = models.BigIntegerField(db_column='Staging_id', blank=True, null=True)  # Field name made lowercase.
     created_on = models.DateTimeField(blank=True, null=True)
     modified_on = models.DateTimeField(blank=True, null=True)
