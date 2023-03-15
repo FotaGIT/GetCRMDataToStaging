@@ -9,7 +9,7 @@ from django.core.wsgi import get_wsgi_application
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "project.settings")
 
 application = get_wsgi_application()
-from get_crm.models import CRM_Data_Staging
+from get_crm.models import CRM_Data_Staging, ExceptionGetCRMDataToStaging
 
 today_date = date.today().strftime("%d-%m-%Y")
 url = "https://skindevreplica.api.tatamotors/api/cv/fota_campaign/get_details/"
@@ -76,27 +76,34 @@ def save_in_database(data):
     return 'all data saved successfully'
 
 
-payload = json.dumps({"from_date": "10-11-2022 00:00:00", "offset": 0})
-# payload = json.dumps({"from_date": f"{today_date} 00:00:00", "offset": 0})
-response = requests.request("POST", url, headers=headers, data=payload)
-data = json.loads(response.text).get("data")
-print(save_in_database(data))
+try:
+    date_offset_ = {"from_date": "10-11-2022 00:00:00", "offset": 0}
+    # date_offset_ = {"from_date": f"{today_date} 00:00:00", "offset": 0}
+    payload = json.dumps(date_offset_)
+    response = requests.request("POST", url, headers=headers, data=payload)
+    try:
+        data = json.loads(response.text).get("data")
+        print(0, save_in_database(data))
+    except Exception as e:
+        ExceptionGetCRMDataToStaging.objects.create(payload=payload, response=response.text, url=url, error=str(e))
+except Exception as e:
+    print(e)
+    ExceptionGetCRMDataToStaging.objects.create(payload=payload, response=response.text, url=url, error=str(e))
 
 total_count = json.loads(response.text).get("total_count")
-total_count_round_number = (math.ceil(total_count / 20) * 20) + 20
-print(total_count_round_number)
+total_count_round_number = (math.ceil(total_count or 0 / 20) * 20) + 20
+
 for num in range(20, total_count_round_number, 20):
     try:
-        # payload = json.dumps({"from_date": f"{today_date} 00:00:00", "offset": num})
-        payload = json.dumps({"from_date": "10-11-2022 00:00:00", "offset": num})
+        date_offset_.update(offset=num)
+        payload = json.dumps(date_offset_)
         response = requests.request("POST", url, headers=headers, data=payload)
-        list_data = json.loads(response.text).get("data")
-        print(num, save_in_database(list_data))
+        try:
+            list_data = json.loads(response.text).get("data")
+            print(num, save_in_database(list_data))
+        except Exception as e:
+            print(e)
+            ExceptionGetCRMDataToStaging.objects.create(payload=payload, response=response.text, url=url, error=str(e))
     except Exception as e:
-        payload = json.dumps({"from_date": "10-11-2022 00:00:00", "offset": num})
-        print(num)
-        response = requests.request("POST", url, headers=headers, data=payload)
-        print(response.text, num)
-        print("Error", e)
-        break
-
+        print(e)
+        ExceptionGetCRMDataToStaging.objects.create(payload=payload, response=response.text, url=url, error=str(e))
