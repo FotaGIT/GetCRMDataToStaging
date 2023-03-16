@@ -4,6 +4,7 @@ three_year_ago = datetime.datetime.now() - datetime.timedelta(days=3*365)
 """
 
 import os
+import datetime
 
 from django.core.wsgi import get_wsgi_application
 from django.utils import timezone
@@ -24,9 +25,15 @@ for i in obj_staging:
     if objects_filter.exists():
         i['staging_id'] = ID
         objects_filter.update(**i)
+        print('staging add', i['staging_id'])
     else:
         CRM_Data_Dump.objects.create(**i)
+        print('dump add')
 
 staging_objects_filter.delete()
 datetime_last_schedule.datetime = timezone.now()  # change field
 datetime_last_schedule.save()  # this will update only
+
+with open(r'C:\Users\ISHWARA.TTL\Desktop\scheduler 2.txt', 'a+') as f:
+    f.write(f"{datetime.datetime.now()}, scheduler 2\n")
+
