@@ -77,7 +77,7 @@ def save_in_database(data):
 
 
 try:
-    date_offset_ = {"from_date": "10-11-2022 00:00:00", "offset": 0}
+    date_offset_ = {"from_date": "01-01-2023 00:00:00", "offset": 0}
     # date_offset_ = {"from_date": f"{today_date} 00:00:00", "offset": 0}
     payload = json.dumps(date_offset_)
     response = requests.request("POST", url, headers=headers, data=payload)
@@ -90,8 +90,8 @@ except Exception as e:
     print(e)
     ExceptionGetCRMDataToStaging.objects.create(payload=payload, response=response.text, url=url, error=str(e))
 
-total_count = json.loads(response.text).get("total_count")
-total_count_round_number = (math.ceil(total_count or 0 / 20) * 20) + 20
+total_count = json.loads(response.text).get("total_count", 0)
+total_count_round_number = (math.ceil(total_count / 20) * 20) + 20
 
 for num in range(20, total_count_round_number, 20):
     try:
