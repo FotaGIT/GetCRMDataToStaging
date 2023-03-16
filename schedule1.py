@@ -42,6 +42,9 @@ def normalize_format_address(arg1, arg2):
 def save_in_database(data):
     while data:
         k = data.pop()
+        if k.get("invoice_details"):
+            k.update(k.get("invoice_details"))
+
         CRM_Data_Staging.objects.create(
             chassis_number=k.get("CHASSIS_NUM_s"),
             vc_number=k.get("NAME_s"),
