@@ -112,3 +112,6 @@ for num in range(20, total_count_round_number, 20):
     except Exception as e:
         print(e)
         ExceptionGetCRMDataToStaging.objects.create(payload=payload, response=response.text, url=url, error=str(e))
+
+with open(r'C:\Users\ISHWARA.TTL\Desktop\scheduler 1.txt', 'a+') as f:
+    f.write(f"{datetime.datetime.now()}, scheduler 1\n")
