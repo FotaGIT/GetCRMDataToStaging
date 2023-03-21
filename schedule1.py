@@ -83,7 +83,7 @@ def save_in_database(data):
 
 
 try:
-    date_offset_ = {"from_date": "01-09-2022 00:00:00", "offset": 980}
+    date_offset_ = {"from_date": "01-09-2022 00:00:00", "offset": 0}
     # date_offset_ = {"from_date": f"{today_date} 00:00:00", "offset": 0}
     payload = json.dumps(date_offset_)
     response = requests.request("POST", url, headers=headers, data=payload)
@@ -112,7 +112,7 @@ for num in range(20, total_count_round_number, 20):
             ExceptionGetCRMDataToStaging.objects.create(payload=payload, response=response.text, url=url, error=str(e))
     except Exception as e:
         print(e)
-        ExceptionGetCRMDataToStaging.objects.create(payload=payload, response=response.text, url=url, error=str(e))
+        ExceptionGetCRMDataToStaging.objects.create(payload=payload, response=None, url=url, error=str(e))
 
 with open(r'C:\Users\ISHWARA.TTL\Desktop\scheduler 1.txt', 'a+') as f:
     f.write(f"{datetime.datetime.now()}, scheduler 1\n")
