@@ -1,3 +1,6 @@
+"""
+CV = Project
+"""
 import datetime
 import json
 import math
@@ -13,7 +16,8 @@ application = get_wsgi_application()
 from get_crm.models import CRM_Data_Staging, ExceptionGetCRMDataToStaging
 
 today_date = date.today().strftime("%d-%m-%Y")
-url = "https://skindevreplica.api.tatamotors/api/cv/fota_campaign/get_details/"
+# url = "https://skindevreplica.api.tatamotors/api/cv/fota_campaign/get_details/" # development
+url = "https://skinprod.api.tatamotors/api/cv/fota_campaign/get_details/" # production
 headers = {'Authorization': 'Bearer uW5opVREeJWnptG0ETfas8asd8h', 'Content-Type': 'application/json'}
 from django.utils import timezone
 
@@ -83,8 +87,8 @@ def save_in_database(data):
 
 
 try:
-    date_offset_ = {"from_date": "01-09-2022 00:00:00", "offset": 0}
-    # date_offset_ = {"from_date": f"{today_date} 00:00:00", "offset": 0}
+    # date_offset_ = {"from_date": "01-12-2022 00:00:00", "offset": 0}
+    date_offset_ = {"from_date": f"{today_date} 00:00:00", "offset": 0}
     payload = json.dumps(date_offset_)
     response = requests.request("POST", url, headers=headers, data=payload)
     try:
