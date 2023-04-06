@@ -20,20 +20,24 @@ staging_objects_filter = CRM_Data_Staging.objects.filter(data_received_date__gt=
 obj_staging = staging_objects_filter.values()
 
 for i in obj_staging:
-    ID = i.pop('id')
-    created_on = i.pop('created_on')
-    modified_on = i.pop('modified_on')
+    try:
+        ID = i.pop('id')
+        created_on = i.pop('created_on')
+        modified_on = i.pop('modified_on')
 
-    objects_filter = EolCertClientTelematics.objects.filter(vin=i.pop("chassis_number"))
-    if objects_filter.exists():
-        # i['staging_id'] = ID
-        objects_filter.update(**i)
-        print('staging add', i['staging_id'])
-    else:
-        CRM_Data_Dump.objects.create(**i)
-        print('dump add')
+        objects_filter = EolCertClientTelematics.objects.filter(vin=i.pop("chassis_number"))
+        if objects_filter.exists():
+            objects_filter.update(**i)
+            print('staging add', i['staging_id'])
+            staging_objects_filter.objects.filter(id=ID).delete()
+        else:
+            CRM_Data_Dump.objects.create(**i)
+            staging_objects_filter.objects.filter(id=ID).delete()
+            print('dump add')
+    except Exception as e:
+        print(str(e))
+        pass
 
-staging_objects_filter.delete()
 datetime_last_schedule.datetime = timezone.now()  # change field
 datetime_last_schedule.save()  # this will update only
 
