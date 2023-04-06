@@ -21,9 +21,12 @@ obj_staging = staging_objects_filter.values()
 
 for i in obj_staging:
     ID = i.pop('id')
-    objects_filter = EolCertClientTelematics.objects.filter(vin=i.get("chassis_number"))
+    created_on = i.pop('created_on')
+    modified_on = i.pop('modified_on')
+
+    objects_filter = EolCertClientTelematics.objects.filter(vin=i.pop("chassis_number"))
     if objects_filter.exists():
-        i['staging_id'] = ID
+        # i['staging_id'] = ID
         objects_filter.update(**i)
         print('staging add', i['staging_id'])
     else:
