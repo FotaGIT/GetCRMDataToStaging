@@ -3,6 +3,8 @@ three_year_ago = datetime.datetime.now() - datetime.timedelta(days=3*365)
 
 """
 
+
+
 import os
 import datetime
 
@@ -29,14 +31,13 @@ for i in obj_staging:
         if objects_filter.exists():
             objects_filter.update(**i)
             print('staging add', i['staging_id'])
-            staging_objects_filter.objects.filter(id=ID).delete()
         else:
             CRM_Data_Dump.objects.create(**i)
-            staging_objects_filter.objects.filter(id=ID).delete()
             print('dump add')
     except Exception as e:
-        print(str(e))
-        pass
+        print(e)
+    else:
+        staging_objects_filter.objects.filter(id=ID).delete()
 
 datetime_last_schedule.datetime = timezone.now()  # change field
 datetime_last_schedule.save()  # this will update only
