@@ -3,8 +3,6 @@ three_year_ago = datetime.datetime.now() - datetime.timedelta(days=3*365)
 
 """
 
-
-
 import os
 import datetime
 
