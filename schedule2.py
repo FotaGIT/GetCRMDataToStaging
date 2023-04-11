@@ -36,7 +36,7 @@ for i in obj_staging:
     except Exception as e:
         print(e)
     else:
-        staging_objects_filter.objects.filter(id=ID).delete()
+        staging_objects_filter.filter(id=ID).delete()
 
 datetime_last_schedule.datetime = timezone.now()  # change field
 datetime_last_schedule.save()  # this will update only
