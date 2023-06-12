@@ -24,7 +24,7 @@ datetime_last_schedule = Max_date_Table.objects.order_by('id').first()
 today_date = datetime_last_schedule.datetime.strftime("%d-%m-%Y %H:%M:%S")
 
 try:
-    date_offset_ = {"from_date": "11-06-2023 04:00:00", "offset": 0}
+    date_offset_ = {"from_date": today_date, "offset": 0}
     payload = json.dumps(date_offset_)
     response = requests.request("POST", url, headers=headers, data=payload)
     try:
