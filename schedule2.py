@@ -25,16 +25,15 @@ for i in obj_staging:
 
         objects_filter = EolCertClientTelematics.objects.filter(vin=chassis_number)
         if objects_filter.exists():
-            objects_filter.update(**i)
+            objects_filter.update(**i, is_transferred_to_fota='N')
             print('staging add', chassis_number)
         else:
-            CRM_Data_Dump.objects.create(**i)
+            CRM_Data_Dump.objects.create(chassis_number=chassis_number, **i)
             print('dump add', chassis_number)
     except Exception as e:
         print(e)
     else:
         staging_objects_filter.filter(id=ID).delete()
-
 
 with open(r'C:\Users\ISHWARA.TTL\Desktop\scheduler 2.txt', 'a+') as f:
     f.write(f"{datetime.datetime.now()}, scheduler 2\n")
