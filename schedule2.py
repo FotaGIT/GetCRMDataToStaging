@@ -11,7 +11,10 @@ from django.utils import timezone
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "project.settings")
 
 application = get_wsgi_application()
-from get_crm.models import CRM_Data_Staging, EolCertClientTelematics, CRM_Data_Dump
+from get_crm.models import CRM_Data_Staging, EolCertClientTelematics, CRM_Data_Dump, Max_date_Table
+
+datetime_last_schedule = Max_date_Table.objects.order_by('id').first()
+
 
 staging_objects_filter = CRM_Data_Staging.objects.all()
 obj_staging = staging_objects_filter.values()
@@ -25,7 +28,7 @@ for i in obj_staging:
 
         objects_filter = EolCertClientTelematics.objects.filter(vin=chassis_number)
         if objects_filter.exists():
-            objects_filter.update(**i, is_transferred_to_fota='N')
+            objects_filter.update(**i, crmdatareceipt_timestamp=datetime_last_schedule.datetime, is_transferred_to_fota='N')
             print('staging add', chassis_number)
         else:
             CRM_Data_Dump.objects.create(chassis_number=chassis_number, **i)

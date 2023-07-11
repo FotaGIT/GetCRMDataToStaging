@@ -268,7 +268,8 @@ class EolCertClientTelematics(models.Model):
     invoice_cancle_date = models.DateTimeField(blank=True, null=True)
     invoice_date = models.DateTimeField(blank=True, null=True)
     invoice_number = models.CharField(max_length=500, blank=True, null=True)
-
+    crmdatareceipt_timestamp = models.DateTimeField(db_column='CRMDataReceipt_TIMESTAMP', blank=True,
+                                                    null=True)  # Field name made lowercase.
     class Meta:
         managed = False
         db_table = 'EOL_CERT_CLIENT_TELEMATICS'
